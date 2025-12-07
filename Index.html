@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Game TopUp - Demo</title>
+  <style>
+    /* Simple modern CSS (no frameworks) */
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8; --glass: rgba(255,255,255,0.04);
+      --radius:12px; --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Arial; background:linear-gradient(180deg,#061021 0%, #071428 60%); color:#e6eef7; margin:0; padding:32px 16px; display:flex; justify-content:center}
+    .wrap{width:100%; max-width:var(--maxw)}
+
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px}
+    .logo{display:flex; gap:12px; align-items:center}
+    .logo .brand{font-weight:700; font-size:18px}
+    .auth-buttons{display:flex; gap:8px}
+    button, input, select{font:inherit}
+    .btn{background:var(--accent); color:#022026; border:none; padding:10px 14px; border-radius:10px; cursor:pointer}
+    .ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:10px}
+
+    .layout{display:grid; grid-template-columns: 320px 1fr; gap:18px}
+
+    /* Left: account / quick topup */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:14px; box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .account{display:flex; gap:12px; align-items:center}
+    .avatar{width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,#0ea5a4,#38bdf8); display:flex; align-items:center; justify-content:center; font-weight:700}
+    .small{font-size:13px; color:var(--muted)}
+
+    .games-list{margin-top:14px}
+    .game{display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; cursor:pointer}
+    .game:hover{background:var(--glass)}
+    .game .icon{width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center}
+
+    /* Right content */
+    .content{min-height:520px}
+    .hero{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .hero h1{margin:0}
+    .cards{display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:14px}
+
+    .product{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px; border-radius:12px}
+    .price{font-weight:700; font-size:16px}
+    .muted{color:var(--muted); font-size:13px}
+
+    form .row{display:flex; gap:8px}
+    label{display:block; font-size:13px; margin-bottom:6px}
+    input, select{width:100%; padding:9px 10px; background:transparent; border:1px solid rgba(255,255,255,0.06); border-radius:8px; color:inherit}
+    .actions{display:flex; gap:8px; align-items:center; margin-top:12px}
+
+    footer{margin-top:18px; color:var(--muted); font-size:13px; text-align:center}
+
+    /* Responsive */
+    @media (max-width:880px){.layout{grid-template-columns:1fr;}.hero{flex-direction:column; align-items:flex-start}}
+
+    /* small helper */
+    .note{font-size:13px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#3b82f6)"></div>
+        <div>
+          <div class="brand">GameTopUp (Demo)</div>
+          <div class="small">Fast, secure top-ups — demo frontend</div>
+        </div>
+      </div>
+
+      <div class="auth-buttons">
+        <!-- These simulate social sign-in buttons. Backend needed for real auth. -->
+        <button class="ghost" id="signin-google">Sign in with Google</button>
+        <button class="ghost" id="signin-apple">Sign in with Apple</button>
+        <button class="ghost" id="signin-ms">Sign in with Microsoft</button>
+        <button class="btn" id="signin-email">Sign in with Email</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="card">
+        <div class="account">
+          <div class="avatar">GT</div>
+          <div>
+            <div id="acct-name">Guest</div>
+            <div class="small">Not signed in</div>
+          </div>
+        </div>
+
+        <div class="games-list">
+          <!-- Quick nav -->
+          <div class="muted" style="margin-top:12px">Quick select</div>
+          <div class="game" data-game="mlbb"><div class="icon">💎</div><div>MLBB - Diamonds</div></div>
+          <div class="game" data-game="pubg"><div class="icon">🎯</div><div>PUBG - UC</div></div>
+          <div class="game" data-game="roblox"><div class="icon">🧱</div><div>ROBLOX - Robux</div></div>
+          <div class="game" data-game="freefire"><div class="icon">🔥</div><div>Free Fire - Diamonds</div></div>
+          <div class="game" data-game="bloodstrike"><div class="icon">⚔️</div><div>Blood Strike - Gold</div></div>
+          <div class="game" data-game="honor"><div class="icon">🏵️</div><div>Honor of Kings - Token</div></div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="muted">Currency</div>
+          <select id="currency">
+            <option value="MMK" data-rate="1">MMK (default)</option>
+            <option value="USD" data-rate="0.00048">USD</option>
+            <option value="EUR" data-rate="0.00045">EUR</option>
+            <option value="THB" data-rate="0.018">THB</option>
+            <option value="IDR" data-rate="6.91">IDR</option>
+            <option value="MYR" data-rate="0.0021">MYR</option>
+            <!-- Add more -- rates are sample multipliers vs MMK (static). Replace with real rates server-side. -->
+          </select>
+          <div class="note" style="margin-top:8px">Prices below are base in MMK (Myanmar Kyat). Currency conversion uses static sample rates.</div>
+        </div>
+
+      </aside>
+
+      <section class="content">
+        <div class="hero">
+          <div>
+            <h1>Top Up Games</h1>
+            <div class="muted">Choose game, select package, fill player info, and select payment.</div>
+          </div>
+          <div>
+            <div class="muted">Payment methods</div>
+            <div style="display:flex; gap:8px; margin-top:8px">
+              <div class="ghost">KPAY</div>
+              <div class="ghost">PAYPAL</div>
+              <div class="ghost">OTHER</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products grid: we'll show MLBB items with prices the user provided and other sample packages -->
+        <div class="cards" id="product-grid" style="margin-top:12px">
+
+          <!-- MLBB Diamond packages (user-provided prices) -->
+          <div class="product" data-game="mlbb">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>MLBB Diamonds</strong><div class="muted">Mobile Legends Bang Bang</div></div>
+              <div class="price" data-base="4000">50 DIA - 4,000 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Other packages:</div>
+            <ul class="muted" style="margin:8px 0 0 14px">
+              <li>100 DIA - 8,000 MMK</li>
+              <li>450 DIA - 14,000 MMK</li>
+              <li>1,000 DIA - 60,000 MMK</li>
+              <li>8,000 DIA - 145,000 MMK</li>
+            </ul>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="mlbb">Top up MLBB</button></div>
+          </div>
+
+          <!-- PUBG UC (sample packages) -->
+          <div class="product" data-game="pubg">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>PUBG UC</strong><div class="muted">PlayerUnknown's Battlegrounds</div></div>
+              <div class="price" data-base="2500">70 UC - 2,500 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Other packages (sample): 175 UC - 6,500 MMK, 430 UC - 15,000 MMK</div>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="pubg">Top up PUBG</button></div>
+          </div>
+
+          <!-- ROBLOX Robux -->
+          <div class="product" data-game="roblox">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>ROBLOX - Robux</strong><div class="muted">Enter username only</div></div>
+              <div class="price" data-base="1200">40 Robux - 1,200 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Sample: 80 Robux - 2,200 MMK; 400 Robux - 10,000 MMK</div>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="roblox">Top up Robux</button></div>
+          </div>
+
+          <!-- Free Fire Diamonds -->
+          <div class="product" data-game="freefire">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>Free Fire - Diamonds</strong><div class="muted">Enter player ID</div></div>
+              <div class="price" data-base="3000">65 DIA - 3,000 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Sample packages available</div>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="freefire">Top up Free Fire</button></div>
+          </div>
+
+          <!-- Blood Strike Gold (ID only) -->
+          <div class="product" data-game="bloodstrike">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>Blood Strike - Gold</strong><div class="muted">ID only</div></div>
+              <div class="price" data-base="900">500 Gold - 900 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Sample tiers: 1,200 Gold, 5,000 Gold</div>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="bloodstrike">Top up Gold</button></div>
+          </div>
+
+          <!-- Honor of Kings Tokens (ID only) -->
+          <div class="product" data-game="honor">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><strong>Honor of Kings - Token</strong><div class="muted">ID only</div></div>
+              <div class="price" data-base="2000">100 Token - 2,000 MMK</div>
+            </div>
+            <div class="muted" style="margin-top:8px">Sample bundles: 250 Token - 4,500 MMK</div>
+            <div style="margin-top:10px"><button class="btn" data-action="buy" data-game="honor">Top up Token</button></div>
+          </div>
+
+        </div>
+
+        <!-- Order / Checkout form (hidden until selecting a product) -->
+        <div id="checkout" class="card" style="margin-top:14px; display:none">
+          <h3 id="checkout-title">Top Up</h3>
+          <form id="order-form">
+            <div id="form-fields">
+              <!-- Dynamic fields injected here -->
+            </div>
+
+            <div class="row" style="margin-top:8px">
+              <div style="flex:1">
+                <label>Choose Package</label>
+                <select id="pkg-select"></select>
+              </div>
+              <div style="width:160px">
+                <label>Quantity</label>
+                <input type="number" id="qty" min="1" value="1" />
+              </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <label>Payment Method</label>
+              <select id="payment">
+                <option value="kpay">KPAY</option>
+                <option value="paypal">PAYPAL</option>
+                <option value="other">OTHER</option>
+              </select>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px">
+              <div class="muted">Total:</div>
+              <div class="price" id="total-amt">0 MMK</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn" type="submit">Place Order (demo)</button>
+              <button class="ghost" type="button" id="cancel-order">Cancel</button>
+            </div>
+            <div class="note" style="margin-top:10px">Note: This is a frontend demo. To process real payments and sign-ins you must implement a secure backend and real OAuth/payment integrations.</div>
+          </form>
+        </div>
+
+        <footer>© Demo — modify prices, rates and integrate backend to make live.</footer>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // --- Basic client-side demo logic ---
+    const games = {
+      mlbb: {
+        name: 'MLBB - Diamonds',
+        require: ['In Game ID', 'Server ID'],
+        packages: [ {label:'50 DIA', base:4000}, {label:'100 DIA', base:8000}, {label:'450 DIA', base:14000}, {label:'1000 DIA', base:60000}, {label:'8000 DIA', base:145000}]
+      },
+      pubg: {name:'PUBG - UC', require:['In Game ID'], packages:[{label:'70 UC', base:2500},{label:'175 UC', base:6500},{label:'430 UC', base:15000}]},
+      roblox: {name:'ROBLOX - Robux', require:['Username'], packages:[{label:'40 Robux', base:1200},{label:'80 Robux', base:2200},{label:'400 Robux', base:10000}]},
+      freefire: {name:'Free Fire - Diamonds', require:['Player ID'], packages:[{label:'65 DIA', base:3000},{label:'140 DIA', base:6000}]},
+      bloodstrike: {name:'Blood Strike - Gold', require:['Player ID'], packages:[{label:'500 Gold', base:900},{label:'1200 Gold', base:2000}]},
+      honor: {name:'Honor of Kings - Token', require:['Player ID'], packages:[{label:'100 Token', base:2000},{label:'250 Token', base:4500}]}
+    }
+
+    // events for quick nav and buy buttons
+    document.querySelectorAll('.game, .product [data-action="buy"]').forEach(el=>{
+      el.addEventListener('click', e=>{
+        const game = el.dataset.game || el.closest('.product')?.dataset.game;
+        openCheckout(game);
+      })
+    })
+
+    const checkout = document.getElementById('checkout');
+    const formFields = document.getElementById('form-fields');
+    const pkgSelect = document.getElementById('pkg-select');
+    const totalAmt = document.getElementById('total-amt');
+    const qtyInput = document.getElementById('qty');
+    const currencySel = document.getElementById('currency');
+
+    let activeGame = null;
+    function openCheckout(gameKey){
+      if(!gameKey || !games[gameKey]) return;
+      activeGame = games[gameKey];
+      document.getElementById('checkout-title').textContent = 'Top up ' + activeGame.name;
+      // build fields
+      formFields.innerHTML = '';
+      activeGame.require.forEach(req=>{
+        const id = req.toLowerCase().replace(/[^a-z0-9]+/g,'_');
+        const div = document.createElement('div');
+        div.style.marginTop='8px';
+        div.innerHTML = `<label>${req}</label><input id="field_${id}" required />`;
+        formFields.appendChild(div);
+      })
+
+      // fill packages
+      pkgSelect.innerHTML = '';
+      activeGame.packages.forEach((p,idx)=>{
+        const opt = document.createElement('option'); opt.value=idx; opt.textContent = p.label + ' — ' + formatMMK(p.base);
+        opt.dataset.base = p.base;
+        pkgSelect.appendChild(opt);
+      })
+
+      qtyInput.value = 1;
+      computeTotal();
+      checkout.style.display = 'block';
+      window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+    }
+
+    function formatMMK(n){return new Intl.NumberFormat('en-US').format(n) + ' MMK'}
+
+    function computeTotal(){
+      const sel = pkgSelect.selectedOptions[0];
+      if(!sel) return;
+      let base = Number(sel.dataset.base || 0);
+      const qty = Number(qtyInput.value || 1);
+      const mmk = base * qty;
+      // apply currency conversion from select's data-rate
+      const rate = Number(currencySel.selectedOptions[0].dataset.rate || 1);
+      const curCode = currencySel.value;
+      const converted = Math.round(mmk * rate);
+      totalAmt.textContent = converted.toLocaleString() + ' ' + curCode;
+    }
+
+    // listeners
+    pkgSelect.addEventListener('change', computeTotal);
+    qtyInput.addEventListener('input', computeTotal);
+    currencySel.addEventListener('change', computeTotal);
+
+    document.getElementById('cancel-order').addEventListener('click', ()=>{checkout.style.display='none'})
+
+    document.getElementById('order-form').addEventListener('submit', e=>{
+      e.preventDefault();
+      // gather data
+      const payload = {game: activeGame?.name, package: pkgSelect.options[pkgSelect.selectedIndex].text, payment: document.getElementById('payment').value, currency: currencySel.value, qty: qtyInput.value};
+      activeGame.require.forEach(req=>{
+        const id = req.toLowerCase().replace(/[^a-z0-9]+/g,'_');
+        payload[id] = document.getElementById('field_'+id).value;
+      })
+      // Demo: show order summary
+      alert('DEMO ORDER SUMMARY:\n' + JSON.stringify(payload, null, 2) + '\n\nThis is a frontend demo. Integrate backend to process orders.');
+    })
+
+    // auth demo buttons - simulate sign in
+    document.getElementById('signin-google').addEventListener('click', ()=>simulateSign('Google'))
+    document.getElementById('signin-apple').addEventListener('click', ()=>simulateSign('Apple'))
+    document.getElementById('signin-ms').addEventListener('click', ()=>simulateSign('Microsoft'))
+    document.getElementById('signin-email').addEventListener('click', ()=>{
+      const email = prompt('Enter demo email:'); if(email) simulateSign(email);
+    })
+
+    function simulateSign(name){
+      document.getElementById('acct-name').textContent = name;
+      document.querySelector('.account .small').textContent = 'Signed in (demo)';
+      alert('Signed in as: ' + name + ' (demo). For real sign-in implement OAuth on server-side.');
+    }
+
+    // hook quick game list clicks
+    document.querySelectorAll('.game').forEach(g=>g.addEventListener('click', ()=>openCheckout(g.dataset.game)));
+
+    // initialize totals
+    computeTotal();
+  </script>
+</body>
+</html>
